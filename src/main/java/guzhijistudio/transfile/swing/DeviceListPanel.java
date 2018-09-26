@@ -1,12 +1,140 @@
 package guzhijistudio.transfile.swing;
 
+import guzhijistudio.transfile.identity.UdpServer;
+import guzhijistudio.transfile.utils.Config;
+import guzhijistudio.transfile.utils.Constants;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.AbstractListModel;
+
 public class DeviceListPanel extends javax.swing.JPanel {
+
+    public static interface DeviceListActionListener {
+
+        void onSelection(String ip);
+
+        void onCancel();
+    }
+
+    private static class DeviceItem {
+
+        private String ip;
+        private String name;
+
+        public DeviceItem(String ip, String name) {
+            this.ip = ip;
+            this.name = name;
+        }
+
+        public String getIp() {
+            return ip;
+        }
+
+        public void setIp(String ip) {
+            this.ip = ip;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public int hashCode() {
+            return ip == null ? 0 : ip.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object another) {
+            String ip2;
+            if (another instanceof DeviceItem) {
+                ip2 = ((DeviceItem) another).ip;
+            } else if (another instanceof String) {
+                ip2 = (String) another;
+            } else {
+                return false;
+            }
+            return ip != null && ip.equals(ip2);
+        }
+    }
+
+    private static class DeviceListModel extends AbstractListModel<String> {
+
+        private final List<DeviceItem> devices = new ArrayList<>();
+
+        @Override
+        public int getSize() {
+            return devices.size();
+        }
+
+        @Override
+        public String getElementAt(int index) {
+            DeviceItem device = devices.get(index);
+            return device.getName() + " - " + device.getIp();
+        }
+
+        public DeviceItem get(int index) {
+            return devices.get(index);
+        }
+
+        public void add(DeviceItem device) {
+            devices.add(device);
+            int index = devices.size() - 1;
+            fireIntervalAdded(this, index, index);
+        }
+
+        public void remove(String ip) {
+            DeviceItem item = new DeviceItem(ip, null);
+            int index = devices.indexOf(item);
+            if (index > -1) {
+                devices.remove(index);
+                fireIntervalRemoved(this, index, index);
+            }
+        }
+    }
+
+    private DeviceListActionListener deviceListActionListener = null;
+    private UdpServer server;
+    private final DeviceListModel deviceListModel = new DeviceListModel();
+    private final UdpServer.UdpServerListener usListener = new UdpServer.UdpServerListener() {
+        @Override
+        public void onEnter(String ip, String name) {
+            System.out.println("enter:" + ip);
+            deviceListModel.add(new DeviceItem(ip, name));
+        }
+
+        @Override
+        public void onQuit(String ip) {
+            System.out.println("quit:" + ip);
+            deviceListModel.remove(ip);
+        }
+    };
 
     /**
      * Creates new form DeviceListPanel
      */
-    public DeviceListPanel() {
+    public DeviceListPanel() throws UnknownHostException, IOException {
         initComponents();
+        jListDevices.setModel(deviceListModel);
+        // SocketAddress addr = new InetSocketAddress("192.168.191.1", Constants.IDENTITY_SERVER_PORT);
+        SocketAddress addr = new InetSocketAddress("0.0.0.0", Constants.IDENTITY_SERVER_PORT);
+        InetAddress group = InetAddress.getByName(Config.GROUP_ADDR);
+        server = new UdpServer(addr, group, usListener);
+        server.start();
+        deviceListModel.add(new DeviceItem("1.1.1.1", "a"));
+        deviceListModel.add(new DeviceItem("1.1.1.2", "b"));
+    }
+
+    public void setDeviceListActionListener(DeviceListActionListener listener) {
+        deviceListActionListener = listener;
     }
 
     /**
@@ -26,6 +154,7 @@ public class DeviceListPanel extends javax.swing.JPanel {
 
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.PAGE_AXIS));
 
+        jListDevices.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(jListDevices);
 
         add(jScrollPane1);
@@ -34,13 +163,41 @@ public class DeviceListPanel extends javax.swing.JPanel {
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("guzhijistudio/transfile/swing/Bundle"); // NOI18N
         jButtonOk.setText(bundle.getString("DeviceListPanel.jButtonOk.text")); // NOI18N
+        jButtonOk.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonOkActionPerformed(evt);
+            }
+        });
         jPanel1.add(jButtonOk);
 
         jButtonCancel.setText(bundle.getString("DeviceListPanel.jButtonCancel.text")); // NOI18N
+        jButtonCancel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonCancelActionPerformed(evt);
+            }
+        });
         jPanel1.add(jButtonCancel);
 
         add(jPanel1);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jButtonOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonOkActionPerformed
+        // TODO add your handling code here:
+        deviceListModel.add(new DeviceItem("1.1.1.3", "c"));
+        // jListDevices.revalidate();
+        System.out.println("ok clicked");
+        int index = jListDevices.getSelectedIndex();
+        if (index > -1 && deviceListActionListener != null) {
+            deviceListActionListener.onSelection(deviceListModel.get(index).getIp());
+        }
+    }//GEN-LAST:event_jButtonOkActionPerformed
+
+    private void jButtonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCancelActionPerformed
+        // TODO add your handling code here:
+        if (deviceListActionListener != null) {
+            deviceListActionListener.onCancel();
+        }
+    }//GEN-LAST:event_jButtonCancelActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

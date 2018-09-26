@@ -1,12 +1,33 @@
 package guzhijistudio.transfile.swing;
 
-public class ConfigFrame extends javax.swing.JFrame {
+import guzhijistudio.transfile.utils.Config;
+import javax.swing.JOptionPane;
+
+public class ConfigDialog extends javax.swing.JDialog {
+
+    private boolean saved;
 
     /**
      * Creates new form ConfigFrame
      */
-    public ConfigFrame() {
+    public ConfigDialog() {
         initComponents();
+
+        if (Config.LOADED) {
+            jTextFieldDeviceName.setText(Config.DEVICE_NAME);
+            jTextFieldGroupAddr.setText(Config.GROUP_ADDR);
+            jTextFieldDir.setText(Config.DIR);
+        } else {
+            jTextFieldDeviceName.setText("");
+            jTextFieldGroupAddr.setText("224.0.0.255");
+            jTextFieldDir.setText("");
+        }
+
+        saved = false;
+    }
+
+    public boolean isSaved() {
+        return saved;
     }
 
     /**
@@ -31,29 +52,29 @@ public class ConfigFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("guzhijistudio/transfile/swing/Bundle"); // NOI18N
-        setTitle(bundle.getString("ConfigFrame.title")); // NOI18N
+        setTitle(bundle.getString("ConfigDialog.title")); // NOI18N
         setLocationByPlatform(true);
+        setModal(true);
         setResizable(false);
-        setType(java.awt.Window.Type.POPUP);
         getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.PAGE_AXIS));
 
         jPanel1.setMinimumSize(new java.awt.Dimension(200, 150));
         jPanel1.setPreferredSize(new java.awt.Dimension(375, 150));
 
         jLabelDeviceName.setLabelFor(jTextFieldDeviceName);
-        jLabelDeviceName.setText(bundle.getString("ConfigFrame.jLabelDeviceName.text")); // NOI18N
+        jLabelDeviceName.setText(bundle.getString("ConfigDialog.jLabelDeviceName.text")); // NOI18N
 
         jTextFieldDeviceName.setMinimumSize(new java.awt.Dimension(100, 27));
         jTextFieldDeviceName.setPreferredSize(new java.awt.Dimension(100, 27));
 
         jLabelGroupAddr.setLabelFor(jTextFieldGroupAddr);
-        jLabelGroupAddr.setText(bundle.getString("ConfigFrame.jLabelGroupAddr.text")); // NOI18N
+        jLabelGroupAddr.setText(bundle.getString("ConfigDialog.jLabelGroupAddr.text")); // NOI18N
 
         jTextFieldGroupAddr.setMinimumSize(new java.awt.Dimension(100, 27));
         jTextFieldGroupAddr.setPreferredSize(new java.awt.Dimension(100, 27));
 
         jLabelDir.setLabelFor(jTextFieldDir);
-        jLabelDir.setText(bundle.getString("ConfigFrame.jLabelDir.text")); // NOI18N
+        jLabelDir.setText(bundle.getString("ConfigDialog.jLabelDir.text")); // NOI18N
 
         jTextFieldDir.setMinimumSize(new java.awt.Dimension(100, 27));
         jTextFieldDir.setPreferredSize(new java.awt.Dimension(100, 27));
@@ -97,7 +118,7 @@ public class ConfigFrame extends javax.swing.JFrame {
 
         jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.LINE_AXIS));
 
-        jButtonSave.setText(bundle.getString("ConfigFrame.jButtonSave.text")); // NOI18N
+        jButtonSave.setText(bundle.getString("ConfigDialog.jButtonSave.text")); // NOI18N
         jButtonSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonSaveActionPerformed(evt);
@@ -105,7 +126,7 @@ public class ConfigFrame extends javax.swing.JFrame {
         });
         jPanel2.add(jButtonSave);
 
-        jButtonCancel.setText(bundle.getString("ConfigFrame.jButtonCancel.text")); // NOI18N
+        jButtonCancel.setText(bundle.getString("ConfigDialog.jButtonCancel.text")); // NOI18N
         jButtonCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonCancelActionPerformed(evt);
@@ -119,11 +140,24 @@ public class ConfigFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSaveActionPerformed
-        // TODO add your handling code here:
+
+        Config.DEVICE_NAME = jTextFieldDeviceName.getText();
+        Config.GROUP_ADDR = jTextFieldGroupAddr.getText();
+        Config.DIR = jTextFieldDir.getText();
+        if (Config.save()) {
+            saved = true;
+            dispose();
+        } else {
+            JOptionPane.showMessageDialog(this, "配置保存失败");
+            System.exit(1);
+        }
+
     }//GEN-LAST:event_jButtonSaveActionPerformed
 
     private void jButtonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCancelActionPerformed
-        // TODO add your handling code here:
+
+        dispose();
+
     }//GEN-LAST:event_jButtonCancelActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

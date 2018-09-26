@@ -1,15 +1,121 @@
 package guzhijistudio.transfile.swing;
 
-import java.awt.Dialog;
+import guzhijistudio.transfile.file.FileReceiver;
+import guzhijistudio.transfile.identity.Broadcaster;
+import guzhijistudio.transfile.utils.Config;
+import guzhijistudio.transfile.utils.Constants;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 public class MainFrame extends javax.swing.JFrame {
+
+    private Broadcaster broadcaster;
+    private FileReceiver fileReceiver;
+    private final FileReceiver.FileReceiverListener frListener = new FileReceiver.FileReceiverListener() {
+
+        @Override
+        public void onFileReceived(File file) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void onFile(File file) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void onMsg(String msg) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void onError(String msg) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void onProgress(File file, long received, long total) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+    };
 
     /**
      * Creates new form MainFrame
      */
     public MainFrame() {
         initComponents();
+
+        if (Config.LOADED) {
+            startBroadcaster();
+            startFileReceiver();
+        } else {
+            showConfigDialog(true);
+        }
+
+    }
+
+    private void startBroadcaster() {
+        SocketAddress groupAddr = new InetSocketAddress(
+                Config.GROUP_ADDR,
+                Constants.IDENTITY_SERVER_PORT);
+        broadcaster = new Broadcaster(Config.DEVICE_NAME, groupAddr);
+        broadcaster.start();
+    }
+
+    private void startFileReceiver() {
+        try {
+            File dir = new File(Config.DIR);
+            fileReceiver = new FileReceiver(Constants.FILE_SERVER_PORT, dir, frListener);
+            fileReceiver.start();
+        } catch (IOException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, ex.getMessage());
+            System.exit(1);
+        }
+    }
+
+    private void showConfigDialog(boolean quitOnCanel) {
+        ConfigDialog dialog = new ConfigDialog();
+        dialog.setVisible(true);
+        if (dialog.isSaved()) {
+            if (fileReceiver != null) {
+                fileReceiver.shutdown();
+            }
+            if (broadcaster != null) {
+                broadcaster.shutdown();
+            }
+            try {
+                if (fileReceiver != null) {
+                    fileReceiver.join();
+                }
+                startFileReceiver();
+                if (broadcaster != null) {
+                    broadcaster.join();
+                }
+                startBroadcaster();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                JOptionPane.showMessageDialog(this, ex.getMessage());
+                System.exit(1);
+            }
+        } else if (quitOnCanel) {
+            System.exit(0);
+        }
+    }
+
+    private void showFileChooser() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            System.out.println("approve");
+        }
     }
 
     /**
@@ -63,6 +169,11 @@ public class MainFrame extends javax.swing.JFrame {
         jButtonAddFile.setFocusable(false);
         jButtonAddFile.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jButtonAddFile.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jButtonAddFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonAddFileActionPerformed(evt);
+            }
+        });
         jPanelSendToolBar.add(jButtonAddFile);
 
         jButtonSendAll.setText(bundle.getString("MainFrame.jButtonSendAll.text")); // NOI18N
@@ -105,9 +216,19 @@ public class MainFrame extends javax.swing.JFrame {
         jMenuSend.setText(bundle.getString("MainFrame.jMenuSend.text")); // NOI18N
 
         jMenuItemAddFile.setText(bundle.getString("MainFrame.jMenuItemAddFile.text")); // NOI18N
+        jMenuItemAddFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemAddFileActionPerformed(evt);
+            }
+        });
         jMenuSend.add(jMenuItemAddFile);
 
         jMenuItemSendAll.setText(bundle.getString("MainFrame.jMenuItemSendAll.text")); // NOI18N
+        jMenuItemSendAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemSendAllActionPerformed(evt);
+            }
+        });
         jMenuSend.add(jMenuItemSendAll);
 
         jMenuBar1.add(jMenuSend);
@@ -130,17 +251,52 @@ public class MainFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jMenuItemConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemConfigActionPerformed
-        new ConfigFrame().setVisible(true);
+
+        showConfigDialog(false);
+
     }//GEN-LAST:event_jMenuItemConfigActionPerformed
 
     private void jButtonSendAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSendAllActionPerformed
-        JDialog dialog = new JDialog(this, Dialog.ModalityType.APPLICATION_MODAL);
-        dialog.setContentPane(new DeviceListPanel());
-        dialog.setLocationByPlatform(true);
-        dialog.setResizable(false);
-        dialog.pack();
-        dialog.setVisible(true);
+        try {
+            final JDialog dialog = new JDialog(this, "请选择设备", true);
+            DeviceListPanel deviceListPanel = new DeviceListPanel();
+            dialog.setContentPane(deviceListPanel);
+            dialog.setLocationByPlatform(true);
+            dialog.setResizable(false);
+            dialog.pack();
+            deviceListPanel.setDeviceListActionListener(new DeviceListPanel.DeviceListActionListener() {
+                @Override
+                public void onSelection(String ip) {
+                    System.out.println(ip);
+                    dialog.dispose();
+                }
+
+                @Override
+                public void onCancel() {
+                    dialog.dispose();
+                }
+            });
+            dialog.setVisible(true);
+        } catch (IOException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_jButtonSendAllActionPerformed
+
+    private void jMenuItemAddFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemAddFileActionPerformed
+
+        showFileChooser();
+
+    }//GEN-LAST:event_jMenuItemAddFileActionPerformed
+
+    private void jMenuItemSendAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemSendAllActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenuItemSendAllActionPerformed
+
+    private void jButtonAddFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddFileActionPerformed
+
+        showFileChooser();
+
+    }//GEN-LAST:event_jButtonAddFileActionPerformed
 
     /**
      * @param args the command line arguments
@@ -171,6 +327,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new MainFrame().setVisible(true);
             }
