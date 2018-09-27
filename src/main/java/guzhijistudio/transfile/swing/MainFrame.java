@@ -10,7 +10,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
@@ -118,6 +117,25 @@ public class MainFrame extends javax.swing.JFrame {
         }
     }
 
+    private void showDeviceChooser() {
+        DeviceListDialog dialog = new DeviceListDialog();
+        dialog.setVisible(true);
+        if (dialog.isIpSelected()) {
+            System.out.println(dialog.getSelectedIp());
+        }
+    }
+
+    @Override
+    public void dispose() {
+        if (fileReceiver != null) {
+            fileReceiver.shutdown();
+        }
+        if (broadcaster != null) {
+            broadcaster.shutdown();
+        }
+        super.dispose();
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -209,7 +227,6 @@ public class MainFrame extends javax.swing.JFrame {
         jPanelReceive.add(jScrollPane2);
 
         jTabbedPane1.addTab(bundle.getString("MainFrame.jPanelReceive.TabConstraints.tabTitle"), jPanelReceive); // NOI18N
-        jPanelReceive.getAccessibleContext().setAccessibleName(bundle.getString("MainFrame.jPanelReceive.AccessibleContext.accessibleName")); // NOI18N
 
         getContentPane().add(jTabbedPane1, java.awt.BorderLayout.CENTER);
 
@@ -257,29 +274,9 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItemConfigActionPerformed
 
     private void jButtonSendAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSendAllActionPerformed
-        try {
-            final JDialog dialog = new JDialog(this, "请选择设备", true);
-            DeviceListPanel deviceListPanel = new DeviceListPanel();
-            dialog.setContentPane(deviceListPanel);
-            dialog.setLocationByPlatform(true);
-            dialog.setResizable(false);
-            dialog.pack();
-            deviceListPanel.setDeviceListActionListener(new DeviceListPanel.DeviceListActionListener() {
-                @Override
-                public void onSelection(String ip) {
-                    System.out.println(ip);
-                    dialog.dispose();
-                }
 
-                @Override
-                public void onCancel() {
-                    dialog.dispose();
-                }
-            });
-            dialog.setVisible(true);
-        } catch (IOException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        showDeviceChooser();
+
     }//GEN-LAST:event_jButtonSendAllActionPerformed
 
     private void jMenuItemAddFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemAddFileActionPerformed
@@ -289,7 +286,9 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItemAddFileActionPerformed
 
     private void jMenuItemSendAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemSendAllActionPerformed
-        // TODO add your handling code here:
+
+        showDeviceChooser();
+
     }//GEN-LAST:event_jMenuItemSendAllActionPerformed
 
     private void jButtonAddFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddFileActionPerformed
