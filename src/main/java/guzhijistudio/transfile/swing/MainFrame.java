@@ -201,8 +201,6 @@ public class MainFrame extends javax.swing.JFrame {
         jButtonSendAll = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanelSendingFiles = new javax.swing.JPanel();
-        fileItemPanel1 = new guzhijistudio.transfile.swing.FileItemPanel();
-        fileItemPanel2 = new guzhijistudio.transfile.swing.FileItemPanel();
         jPanelReceive = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jPanelFilesReceived = new javax.swing.JPanel();
@@ -257,9 +255,6 @@ public class MainFrame extends javax.swing.JFrame {
 
         jPanelSendingFiles.setBackground(java.awt.SystemColor.window);
         jPanelSendingFiles.setLayout(new javax.swing.BoxLayout(jPanelSendingFiles, javax.swing.BoxLayout.PAGE_AXIS));
-        jPanelSendingFiles.add(fileItemPanel1);
-        jPanelSendingFiles.add(fileItemPanel2);
-
         jScrollPane1.setViewportView(jPanelSendingFiles);
 
         jPanelSend.add(jScrollPane1);
@@ -384,8 +379,6 @@ public class MainFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private guzhijistudio.transfile.swing.FileItemPanel fileItemPanel1;
-    private guzhijistudio.transfile.swing.FileItemPanel fileItemPanel2;
     private javax.swing.JButton jButtonAddFile;
     private javax.swing.JButton jButtonSendAll;
     private javax.swing.JMenuBar jMenuBar1;
