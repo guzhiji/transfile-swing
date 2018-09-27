@@ -1,12 +1,54 @@
 package guzhijistudio.transfile.swing;
 
+import java.io.File;
+
 public class FileItemPanel extends javax.swing.JPanel {
+
+    private File file = null;
 
     /**
      * Creates new form FileItemPanel
      */
     public FileItemPanel() {
         initComponents();
+    }
+
+    public FileItemPanel(File file) {
+        this();
+        setFile(file);
+    }
+
+    public final void setFile(File file) {
+        this.file = file;
+        jLabelFileName.setText(file.getName());
+        jLabelFileSize.setText(formatSize(file.length()));
+    }
+
+    public final File getFile() {
+        return file;
+    }
+
+    public final void setProgress(long progress, long total) {
+        jProgressBar1.setMaximum(10000);
+        jProgressBar1.setValue((int) (10000.0 * progress / total));
+        jLabelFileSize.setText(formatSize(progress) + " / " + formatSize(total));
+    }
+
+    private static String formatSize(long size) {
+        float s = size;
+        if (s < 1024) {
+            return Math.round(s * 100) / 100.0 + " bytes";
+        }
+        s /= 1024;
+        if (s < 1024) {
+            return Math.round(s * 100) / 100.0 + " Kb";
+        }
+        s /= 1024;
+        if (s < 1024) {
+            return Math.round(s * 100) / 100.0 + " Mb";
+        }
+        s /= 1024;
+        return Math.round(s * 100) / 100.0 + " Gb";
     }
 
     /**
@@ -22,6 +64,18 @@ public class FileItemPanel extends javax.swing.JPanel {
         jLabelFileSize = new javax.swing.JLabel();
         jProgressBar1 = new javax.swing.JProgressBar();
 
+        setBackground(java.awt.SystemColor.window);
+        setMaximumSize(new java.awt.Dimension(350, 64));
+        setMinimumSize(new java.awt.Dimension(350, 64));
+        setPreferredSize(new java.awt.Dimension(350, 64));
+        addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                formMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                formMouseExited(evt);
+            }
+        });
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.PAGE_AXIS));
 
         jLabelFileName.setFont(new java.awt.Font("宋体", 0, 24)); // NOI18N
@@ -32,6 +86,18 @@ public class FileItemPanel extends javax.swing.JPanel {
         add(jLabelFileSize);
         add(jProgressBar1);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void formMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseEntered
+
+        setBackground(java.awt.SystemColor.control);
+
+    }//GEN-LAST:event_formMouseEntered
+
+    private void formMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseExited
+
+        setBackground(java.awt.SystemColor.window);
+
+    }//GEN-LAST:event_formMouseExited
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

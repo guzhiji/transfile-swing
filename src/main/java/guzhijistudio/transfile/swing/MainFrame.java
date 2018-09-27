@@ -1,13 +1,17 @@
 package guzhijistudio.transfile.swing;
 
 import guzhijistudio.transfile.file.FileReceiver;
+import guzhijistudio.transfile.file.FileSender;
 import guzhijistudio.transfile.identity.Broadcaster;
 import guzhijistudio.transfile.utils.Config;
 import guzhijistudio.transfile.utils.Constants;
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -17,31 +21,62 @@ public class MainFrame extends javax.swing.JFrame {
 
     private Broadcaster broadcaster;
     private FileReceiver fileReceiver;
+    private final ExecutorService fileSenders = Executors.newFixedThreadPool(2);
     private final FileReceiver.FileReceiverListener frListener = new FileReceiver.FileReceiverListener() {
 
         @Override
         public void onFileReceived(File file) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public void onFile(File file) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            jPanelFilesReceived.add(new FileItemPanel(file));
         }
 
         @Override
         public void onMsg(String msg) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public void onError(String msg) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public void onProgress(File file, long received, long total) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            for (Component comp : jPanelFilesReceived.getComponents()) {
+                if (comp instanceof FileItemPanel) {
+                    FileItemPanel fileItem = (FileItemPanel) comp;
+                    if (fileItem.getFile().equals(file)) {
+                        fileItem.setProgress(received, total);
+                    }
+                }
+            }
+        }
+    };
+    private final FileSender.FileSenderListener fsListener = new FileSender.FileSenderListener() {
+        @Override
+        public void onStart(File file) {
+
+        }
+
+        @Override
+        public void onFileSent(File file) {
+        }
+
+        @Override
+        public void onError(File file, String msg) {
+        }
+
+        @Override
+        public void onProgress(File file, long sent, long total) {
+            for (Component comp : jPanelSendingFiles.getComponents()) {
+                if (comp instanceof FileItemPanel) {
+                    FileItemPanel fileItem = (FileItemPanel) comp;
+                    if (fileItem.getFile().equals(file)) {
+                        fileItem.setProgress(sent, total);
+                    }
+                }
+            }
         }
     };
 
@@ -80,7 +115,7 @@ public class MainFrame extends javax.swing.JFrame {
         }
     }
 
-    private void showConfigDialog(boolean quitOnCanel) {
+    private void showConfigDialog(boolean quitOnCancel) {
         ConfigDialog dialog = new ConfigDialog();
         dialog.setVisible(true);
         if (dialog.isSaved()) {
@@ -104,7 +139,7 @@ public class MainFrame extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, ex.getMessage());
                 System.exit(1);
             }
-        } else if (quitOnCanel) {
+        } else if (quitOnCancel) {
             System.exit(0);
         }
     }
@@ -112,8 +147,11 @@ public class MainFrame extends javax.swing.JFrame {
     private void showFileChooser() {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setMultiSelectionEnabled(true);
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            System.out.println("approve");
+            for (File file : chooser.getSelectedFiles()) {
+                jPanelSendingFiles.add(new FileItemPanel(file));
+            }
         }
     }
 
@@ -121,7 +159,16 @@ public class MainFrame extends javax.swing.JFrame {
         DeviceListDialog dialog = new DeviceListDialog();
         dialog.setVisible(true);
         if (dialog.isIpSelected()) {
-            System.out.println(dialog.getSelectedIp());
+            for (Component comp : jPanelSendingFiles.getComponents()) {
+                if (comp instanceof FileItemPanel) {
+                    FileItemPanel fileItem = (FileItemPanel) comp;
+                    fileSenders.submit(new FileSender(
+                            dialog.getSelectedIp(),
+                            Constants.FILE_SERVER_PORT,
+                            fileItem.getFile().getAbsolutePath(),
+                            fsListener));
+                }
+            }
         }
     }
 
@@ -153,13 +200,12 @@ public class MainFrame extends javax.swing.JFrame {
         jButtonAddFile = new javax.swing.JButton();
         jButtonSendAll = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jPanel3 = new javax.swing.JPanel();
+        jPanelSendingFiles = new javax.swing.JPanel();
         fileItemPanel1 = new guzhijistudio.transfile.swing.FileItemPanel();
         fileItemPanel2 = new guzhijistudio.transfile.swing.FileItemPanel();
         jPanelReceive = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jPanel4 = new javax.swing.JPanel();
-        fileItemPanel3 = new guzhijistudio.transfile.swing.FileItemPanel();
+        jPanelFilesReceived = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenuSend = new javax.swing.JMenu();
         jMenuItemAddFile = new javax.swing.JMenuItem();
@@ -207,11 +253,14 @@ public class MainFrame extends javax.swing.JFrame {
 
         jPanelSend.add(jPanelSendToolBar);
 
-        jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.PAGE_AXIS));
-        jPanel3.add(fileItemPanel1);
-        jPanel3.add(fileItemPanel2);
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        jScrollPane1.setViewportView(jPanel3);
+        jPanelSendingFiles.setBackground(java.awt.SystemColor.window);
+        jPanelSendingFiles.setLayout(new javax.swing.BoxLayout(jPanelSendingFiles, javax.swing.BoxLayout.PAGE_AXIS));
+        jPanelSendingFiles.add(fileItemPanel1);
+        jPanelSendingFiles.add(fileItemPanel2);
+
+        jScrollPane1.setViewportView(jPanelSendingFiles);
 
         jPanelSend.add(jScrollPane1);
 
@@ -219,10 +268,11 @@ public class MainFrame extends javax.swing.JFrame {
 
         jPanelReceive.setLayout(new javax.swing.BoxLayout(jPanelReceive, javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel4.setLayout(new javax.swing.BoxLayout(jPanel4, javax.swing.BoxLayout.PAGE_AXIS));
-        jPanel4.add(fileItemPanel3);
+        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        jScrollPane2.setViewportView(jPanel4);
+        jPanelFilesReceived.setBackground(java.awt.SystemColor.window);
+        jPanelFilesReceived.setLayout(new javax.swing.BoxLayout(jPanelFilesReceived, javax.swing.BoxLayout.PAGE_AXIS));
+        jScrollPane2.setViewportView(jPanelFilesReceived);
 
         jPanelReceive.add(jScrollPane2);
 
@@ -336,7 +386,6 @@ public class MainFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private guzhijistudio.transfile.swing.FileItemPanel fileItemPanel1;
     private guzhijistudio.transfile.swing.FileItemPanel fileItemPanel2;
-    private guzhijistudio.transfile.swing.FileItemPanel fileItemPanel3;
     private javax.swing.JButton jButtonAddFile;
     private javax.swing.JButton jButtonSendAll;
     private javax.swing.JMenuBar jMenuBar1;
@@ -346,11 +395,11 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItemConfig;
     private javax.swing.JMenuItem jMenuItemSendAll;
     private javax.swing.JMenu jMenuSend;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanelFilesReceived;
     private javax.swing.JPanel jPanelReceive;
     private javax.swing.JPanel jPanelSend;
     private javax.swing.JPanel jPanelSendToolBar;
+    private javax.swing.JPanel jPanelSendingFiles;
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
