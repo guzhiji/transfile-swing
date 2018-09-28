@@ -6,6 +6,7 @@ import guzhijistudio.transfile.identity.Broadcaster;
 import guzhijistudio.transfile.utils.Config;
 import guzhijistudio.transfile.utils.Constants;
 import java.awt.Component;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -85,6 +86,8 @@ public class MainFrame extends javax.swing.JFrame {
      */
     public MainFrame() {
         initComponents();
+
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/guzhijistudio/transfile/swing/icon.png")));
 
         if (Config.LOADED) {
             startBroadcaster();
