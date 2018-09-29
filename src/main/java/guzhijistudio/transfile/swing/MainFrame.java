@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 public class MainFrame extends javax.swing.JFrame {
 
@@ -27,11 +28,18 @@ public class MainFrame extends javax.swing.JFrame {
 
         @Override
         public void onFileReceived(File file) {
+            FileItemPanel fileItem = findFileItemPanel(jPanelFilesReceived, file);
+            if (fileItem != null) {
+                fileItem.setDone(true);
+            }
         }
 
         @Override
         public void onFile(File file) {
-            jPanelFilesReceived.add(new FileItemPanel(file));
+            FileItemPanel fileItem = findFileItemPanel(jPanelFilesReceived, file);
+            if (fileItem == null) {
+                jPanelFilesReceived.add(new FileItemPanel(file));
+            }
         }
 
         @Override
@@ -44,39 +52,38 @@ public class MainFrame extends javax.swing.JFrame {
 
         @Override
         public void onProgress(File file, long received, long total) {
-            for (Component comp : jPanelFilesReceived.getComponents()) {
-                if (comp instanceof FileItemPanel) {
-                    FileItemPanel fileItem = (FileItemPanel) comp;
-                    if (fileItem.getFile().equals(file)) {
-                        fileItem.setProgress(received, total);
-                    }
-                }
+            FileItemPanel fileItem = findFileItemPanel(jPanelFilesReceived, file);
+            if (fileItem != null) {
+                fileItem.setProgress(received, total);
             }
         }
     };
     private final FileSender.FileSenderListener fsListener = new FileSender.FileSenderListener() {
         @Override
         public void onStart(File file) {
-
         }
 
         @Override
         public void onFileSent(File file) {
+            FileItemPanel fileItem = findFileItemPanel(jPanelSendingFiles, file);
+            if (fileItem != null) {
+                fileItem.setDone(true);
+            }
         }
 
         @Override
         public void onError(File file, String msg) {
+            FileItemPanel fileItem = findFileItemPanel(jPanelSendingFiles, file);
+            if (fileItem != null) {
+                fileItem.setProgressing(false);
+            }
         }
 
         @Override
         public void onProgress(File file, long sent, long total) {
-            for (Component comp : jPanelSendingFiles.getComponents()) {
-                if (comp instanceof FileItemPanel) {
-                    FileItemPanel fileItem = (FileItemPanel) comp;
-                    if (fileItem.getFile().equals(file)) {
-                        fileItem.setProgress(sent, total);
-                    }
-                }
+            FileItemPanel fileItem = findFileItemPanel(jPanelSendingFiles, file);
+            if (fileItem != null) {
+                fileItem.setProgress(sent, total);
             }
         }
     };
@@ -153,7 +160,11 @@ public class MainFrame extends javax.swing.JFrame {
         chooser.setMultiSelectionEnabled(true);
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             for (File file : chooser.getSelectedFiles()) {
-                jPanelSendingFiles.add(new FileItemPanel(file));
+                if (findFileItemPanel(jPanelSendingFiles, file) == null) { // file not listed
+                    jPanelSendingFiles.add(new FileItemPanel(file));
+                } else {
+                    JOptionPane.showMessageDialog(this, "文件 " + file.getName() + " 已经在发送列表中");
+                }
             }
         }
     }
@@ -165,14 +176,28 @@ public class MainFrame extends javax.swing.JFrame {
             for (Component comp : jPanelSendingFiles.getComponents()) {
                 if (comp instanceof FileItemPanel) {
                     FileItemPanel fileItem = (FileItemPanel) comp;
-                    fileSenders.submit(new FileSender(
-                            dialog.getSelectedIp(),
-                            Constants.FILE_SERVER_PORT,
-                            fileItem.getFile().getAbsolutePath(),
-                            fsListener));
+                    if (!fileItem.isProgressing() && !fileItem.isDone()) {
+                        fileSenders.submit(new FileSender(
+                                dialog.getSelectedIp(),
+                                Constants.FILE_SERVER_PORT,
+                                fileItem.getFile().getAbsolutePath(),
+                                fsListener));
+                    }
                 }
             }
         }
+    }
+
+    private FileItemPanel findFileItemPanel(JPanel list, File file) {
+        for (Component comp : list.getComponents()) {
+            if (comp instanceof FileItemPanel) {
+                FileItemPanel fileItem = (FileItemPanel) comp;
+                if (fileItem.getFile().equals(file)) {
+                    return fileItem;
+                }
+            }
+        }
+        return null;
     }
 
     @Override

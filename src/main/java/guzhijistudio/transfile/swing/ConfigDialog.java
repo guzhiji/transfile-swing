@@ -58,9 +58,6 @@ public class ConfigDialog extends javax.swing.JDialog {
         setResizable(false);
         getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.PAGE_AXIS));
 
-        jPanel1.setMinimumSize(new java.awt.Dimension(200, 150));
-        jPanel1.setPreferredSize(new java.awt.Dimension(375, 150));
-
         jLabelDeviceName.setLabelFor(jTextFieldDeviceName);
         jLabelDeviceName.setText(bundle.getString("ConfigDialog.jLabelDeviceName.text")); // NOI18N
 

@@ -5,6 +5,8 @@ import java.io.File;
 public class FileItemPanel extends javax.swing.JPanel {
 
     private File file = null;
+    private boolean progressing = false;
+    private boolean done = false;
 
     /**
      * Creates new form FileItemPanel
@@ -32,6 +34,29 @@ public class FileItemPanel extends javax.swing.JPanel {
         jProgressBar1.setMaximum(10000);
         jProgressBar1.setValue((int) (10000.0 * progress / total));
         jLabelFileSize.setText(formatSize(progress) + " / " + formatSize(total));
+        progressing = true;
+    }
+
+    public final void setProgressing(boolean progressing) {
+        this.progressing = progressing;
+        if (progressing) {
+            done = false;
+        }
+    }
+
+    public final boolean isProgressing() {
+        return progressing;
+    }
+
+    public final void setDone(boolean done) {
+        this.done = done;
+        if (done) {
+            this.progressing = false;
+        }
+    }
+
+    public final boolean isDone() {
+        return done;
     }
 
     private static String formatSize(long size) {
@@ -65,7 +90,7 @@ public class FileItemPanel extends javax.swing.JPanel {
         jProgressBar1 = new javax.swing.JProgressBar();
 
         setBackground(java.awt.SystemColor.window);
-        setMaximumSize(new java.awt.Dimension(300, 32767));
+        setMaximumSize(new java.awt.Dimension(300, 72));
         setMinimumSize(new java.awt.Dimension(300, 72));
         setPreferredSize(new java.awt.Dimension(300, 72));
         addMouseListener(new java.awt.event.MouseAdapter() {
