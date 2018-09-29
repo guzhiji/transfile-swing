@@ -1,5 +1,6 @@
 package guzhijistudio.transfile.swing;
 
+import java.awt.event.ActionListener;
 import java.io.File;
 
 public class FileItemPanel extends javax.swing.JPanel {
@@ -7,17 +8,33 @@ public class FileItemPanel extends javax.swing.JPanel {
     private File file = null;
     private boolean progressing = false;
     private boolean done = false;
+    private String destIp = null;
 
     /**
      * Creates new form FileItemPanel
      */
     public FileItemPanel() {
         initComponents();
+        jPopupMenu1.setVisible(false);
+        jMenuItemResend.setVisible(false);
+        jMenuItemRemove.setVisible(false);
     }
 
     public FileItemPanel(File file) {
         this();
         setFile(file);
+    }
+
+    public final void setResendAction(ActionListener actionListener) {
+        jPopupMenu1.setVisible(true);
+        jMenuItemResend.setVisible(true);
+        jMenuItemResend.addActionListener(actionListener);
+    }
+
+    public final void setRemoveAction(ActionListener actionListener) {
+        jPopupMenu1.setVisible(true);
+        jMenuItemRemove.setVisible(true);
+        jMenuItemRemove.addActionListener(actionListener);
     }
 
     public final void setFile(File file) {
@@ -52,11 +69,20 @@ public class FileItemPanel extends javax.swing.JPanel {
         this.done = done;
         if (done) {
             this.progressing = false;
+            jLabelFileSize.setText(formatSize(file.length()));
         }
     }
 
     public final boolean isDone() {
         return done;
+    }
+
+    public final void setDestIp(String ip) {
+        destIp = ip;
+    }
+
+    public final String getDestIp() {
+        return destIp;
     }
 
     private static String formatSize(long size) {
@@ -85,15 +111,28 @@ public class FileItemPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPopupMenu1 = new javax.swing.JPopupMenu();
+        jMenuItemResend = new javax.swing.JMenuItem();
+        jMenuItemRemove = new javax.swing.JMenuItem();
         jLabelFileName = new javax.swing.JLabel();
         jLabelFileSize = new javax.swing.JLabel();
         jProgressBar1 = new javax.swing.JProgressBar();
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("guzhijistudio/transfile/swing/Bundle"); // NOI18N
+        jMenuItemResend.setText(bundle.getString("FileItemPanel.jMenuItemResend.text")); // NOI18N
+        jPopupMenu1.add(jMenuItemResend);
+
+        jMenuItemRemove.setText(bundle.getString("FileItemPanel.jMenuItemRemove.text")); // NOI18N
+        jPopupMenu1.add(jMenuItemRemove);
 
         setBackground(java.awt.SystemColor.window);
         setMaximumSize(new java.awt.Dimension(300, 72));
         setMinimumSize(new java.awt.Dimension(300, 72));
         setPreferredSize(new java.awt.Dimension(300, 72));
         addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                formMouseClicked(evt);
+            }
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 formMouseEntered(evt);
             }
@@ -104,10 +143,10 @@ public class FileItemPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridLayout(3, 1));
 
         jLabelFileName.setFont(new java.awt.Font("宋体", 0, 24)); // NOI18N
-        jLabelFileName.setText("jLabel1");
+        jLabelFileName.setText(bundle.getString("FileItemPanel.jLabelFileName.text")); // NOI18N
         add(jLabelFileName);
 
-        jLabelFileSize.setText("jLabel2");
+        jLabelFileSize.setText(bundle.getString("FileItemPanel.jLabelFileSize.text")); // NOI18N
         add(jLabelFileSize);
         add(jProgressBar1);
     }// </editor-fold>//GEN-END:initComponents
@@ -124,10 +163,19 @@ public class FileItemPanel extends javax.swing.JPanel {
 
     }//GEN-LAST:event_formMouseExited
 
+    private void formMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
+
+        jPopupMenu1.show(evt.getComponent(), evt.getX(), evt.getY());
+
+    }//GEN-LAST:event_formMouseClicked
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabelFileName;
     private javax.swing.JLabel jLabelFileSize;
+    private javax.swing.JMenuItem jMenuItemRemove;
+    private javax.swing.JMenuItem jMenuItemResend;
+    private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JProgressBar jProgressBar1;
     // End of variables declaration//GEN-END:variables
 }

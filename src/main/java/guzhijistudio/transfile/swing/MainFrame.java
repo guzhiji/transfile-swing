@@ -7,6 +7,8 @@ import guzhijistudio.transfile.utils.Config;
 import guzhijistudio.transfile.utils.Constants;
 import java.awt.Component;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -38,7 +40,15 @@ public class MainFrame extends javax.swing.JFrame {
         public void onFile(File file) {
             FileItemPanel fileItem = findFileItemPanel(jPanelFilesReceived, file);
             if (fileItem == null) {
-                jPanelFilesReceived.add(new FileItemPanel(file));
+                final FileItemPanel panel = new FileItemPanel(file);
+                panel.setRemoveAction(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent ae) {
+                        jPanelFilesReceived.remove(panel);
+                        jPanelFilesReceived.repaint();
+                    }
+                });
+                jPanelFilesReceived.add(panel);
             }
         }
 
@@ -161,8 +171,43 @@ public class MainFrame extends javax.swing.JFrame {
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             for (File file : chooser.getSelectedFiles()) {
                 if (findFileItemPanel(jPanelSendingFiles, file) == null) { // file not listed
-                    jPanelSendingFiles.add(new FileItemPanel(file));
-                } else {
+                    // create panel
+                    final FileItemPanel panel = new FileItemPanel(file);
+                    panel.setResendAction(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent ae) {
+                            if (panel.isProgressing()) {
+                                JOptionPane.showMessageDialog(MainFrame.this, "文件正在发送中！");
+                            } else {
+                                String ip = panel.getDestIp();
+                                if (ip == null) { // choose an IP if not sent before
+                                    DeviceListDialog dialog = new DeviceListDialog();
+                                    dialog.setVisible(true);
+                                    if (dialog.isIpSelected()) {
+                                        ip = dialog.getSelectedIp();
+                                        panel.setDestIp(ip);
+                                    }
+                                }
+                                if (ip != null) {
+                                    fileSenders.submit(new FileSender(
+                                            ip,
+                                            Constants.FILE_SERVER_PORT,
+                                            panel.getFile().getAbsolutePath(),
+                                            fsListener));
+                                }
+                            }
+                        }
+                    });
+                    panel.setRemoveAction(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent ae) {
+                            jPanelSendingFiles.remove(panel);
+                            jPanelSendingFiles.repaint();
+                        }
+                    });
+                    // add it to the list
+                    jPanelSendingFiles.add(panel);
+                } else { // already listed
                     JOptionPane.showMessageDialog(this, "文件 " + file.getName() + " 已经在发送列表中");
                 }
             }
@@ -177,6 +222,7 @@ public class MainFrame extends javax.swing.JFrame {
                 if (comp instanceof FileItemPanel) {
                     FileItemPanel fileItem = (FileItemPanel) comp;
                     if (!fileItem.isProgressing() && !fileItem.isDone()) {
+                        fileItem.setDestIp(dialog.getSelectedIp());
                         fileSenders.submit(new FileSender(
                                 dialog.getSelectedIp(),
                                 Constants.FILE_SERVER_PORT,
