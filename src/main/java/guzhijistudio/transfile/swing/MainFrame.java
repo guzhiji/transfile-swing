@@ -44,8 +44,12 @@ public class MainFrame extends javax.swing.JFrame {
                 panel.setRemoveAction(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        jPanelFilesReceived.remove(panel);
-                        jPanelFilesReceived.repaint();
+                        if (panel.isProgressing()) {
+                            JOptionPane.showMessageDialog(MainFrame.this, "文件正在接收中！");
+                        } else {
+                            jPanelFilesReceived.remove(panel);
+                            jPanelFilesReceived.repaint();
+                        }
                     }
                 });
                 jPanelFilesReceived.add(panel);
@@ -201,8 +205,12 @@ public class MainFrame extends javax.swing.JFrame {
                     panel.setRemoveAction(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent ae) {
-                            jPanelSendingFiles.remove(panel);
-                            jPanelSendingFiles.repaint();
+                            if (panel.isProgressing()) {
+                                JOptionPane.showMessageDialog(MainFrame.this, "文件正在发送中！");
+                            } else {
+                                jPanelSendingFiles.remove(panel);
+                                jPanelSendingFiles.repaint();
+                            }
                         }
                     });
                     // add it to the list
