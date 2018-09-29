@@ -126,8 +126,6 @@ public class DeviceListDialog extends javax.swing.JDialog {
             InetAddress group = InetAddress.getByName(Config.GROUP_ADDR);
             server = new UdpServer(addr, group, usListener);
             server.start();
-            deviceListModel.add(new DeviceItem("1.1.1.1", "a"));
-            deviceListModel.add(new DeviceItem("1.1.1.2", "b"));
         } catch (IOException ex) {
             Logger.getLogger(DeviceListDialog.class.getName()).log(Level.SEVERE, null, ex);
         }

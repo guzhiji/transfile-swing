@@ -5,6 +5,7 @@ import javax.swing.JOptionPane;
 
 public class ConfigDialog extends javax.swing.JDialog {
 
+    private final String transConfigSaveFailure;
     private boolean saved;
 
     /**
@@ -12,6 +13,9 @@ public class ConfigDialog extends javax.swing.JDialog {
      */
     public ConfigDialog() {
         initComponents();
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("guzhijistudio/transfile/swing/Bundle");
+        transConfigSaveFailure = bundle.getString("ConfigDialog.Message.ConfigSaveFailure");
 
         if (Config.LOADED) {
             jTextFieldDeviceName.setText(Config.DEVICE_NAME);
@@ -145,7 +149,7 @@ public class ConfigDialog extends javax.swing.JDialog {
             saved = true;
             dispose();
         } else {
-            JOptionPane.showMessageDialog(this, "配置保存失败");
+            JOptionPane.showMessageDialog(this, transConfigSaveFailure);
             System.exit(1);
         }
 

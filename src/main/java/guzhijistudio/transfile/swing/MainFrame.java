@@ -23,6 +23,7 @@ import javax.swing.JPanel;
 
 public class MainFrame extends javax.swing.JFrame {
 
+    private final String transFileReceiving, transFileSending, transFileInList;
     private Broadcaster broadcaster;
     private FileReceiver fileReceiver;
     private final ExecutorService fileSenders = Executors.newFixedThreadPool(2);
@@ -45,7 +46,7 @@ public class MainFrame extends javax.swing.JFrame {
                     @Override
                     public void actionPerformed(ActionEvent ae) {
                         if (panel.isProgressing()) {
-                            JOptionPane.showMessageDialog(MainFrame.this, "文件正在接收中！");
+                            JOptionPane.showMessageDialog(MainFrame.this, transFileReceiving);
                         } else {
                             jPanelFilesReceived.remove(panel);
                             jPanelFilesReceived.repaint();
@@ -107,6 +108,11 @@ public class MainFrame extends javax.swing.JFrame {
      */
     public MainFrame() {
         initComponents();
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("guzhijistudio/transfile/swing/Bundle");
+        transFileReceiving = bundle.getString("MainFrame.Message.FileReceiving");
+        transFileSending = bundle.getString("MainFrame.Message.FileSending");
+        transFileInList = bundle.getString("MainFrame.Message.FileInList");
 
         setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/guzhijistudio/transfile/swing/icon.png")));
 
@@ -181,7 +187,7 @@ public class MainFrame extends javax.swing.JFrame {
                         @Override
                         public void actionPerformed(ActionEvent ae) {
                             if (panel.isProgressing()) {
-                                JOptionPane.showMessageDialog(MainFrame.this, "文件正在发送中！");
+                                JOptionPane.showMessageDialog(MainFrame.this, transFileSending);
                             } else {
                                 String ip = panel.getDestIp();
                                 if (ip == null) { // choose an IP if not sent before
@@ -206,7 +212,7 @@ public class MainFrame extends javax.swing.JFrame {
                         @Override
                         public void actionPerformed(ActionEvent ae) {
                             if (panel.isProgressing()) {
-                                JOptionPane.showMessageDialog(MainFrame.this, "文件正在发送中！");
+                                JOptionPane.showMessageDialog(MainFrame.this, transFileSending);
                             } else {
                                 jPanelSendingFiles.remove(panel);
                                 jPanelSendingFiles.repaint();
@@ -216,7 +222,7 @@ public class MainFrame extends javax.swing.JFrame {
                     // add it to the list
                     jPanelSendingFiles.add(panel);
                 } else { // already listed
-                    JOptionPane.showMessageDialog(this, "文件 " + file.getName() + " 已经在发送列表中");
+                    JOptionPane.showMessageDialog(this, String.format(transFileInList, file.getName()));
                 }
             }
         }
@@ -274,8 +280,6 @@ public class MainFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPopupMenu1 = new javax.swing.JPopupMenu();
-        jMenuItem4 = new javax.swing.JMenuItem();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanelSend = new javax.swing.JPanel();
         jPanelSendToolBar = new javax.swing.JPanel();
@@ -293,11 +297,8 @@ public class MainFrame extends javax.swing.JFrame {
         jMenuConfig = new javax.swing.JMenu();
         jMenuItemConfig = new javax.swing.JMenuItem();
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("guzhijistudio/transfile/swing/Bundle"); // NOI18N
-        jMenuItem4.setText(bundle.getString("MainFrame.jMenuItem4.text")); // NOI18N
-        jPopupMenu1.add(jMenuItem4);
-
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("guzhijistudio/transfile/swing/Bundle"); // NOI18N
         setTitle(bundle.getString("MainFrame.title")); // NOI18N
         setLocationByPlatform(true);
         setMaximumSize(new java.awt.Dimension(350, 2147483647));
@@ -465,7 +466,6 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JButton jButtonSendAll;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenu jMenuConfig;
-    private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItemAddFile;
     private javax.swing.JMenuItem jMenuItemConfig;
     private javax.swing.JMenuItem jMenuItemSendAll;
@@ -475,7 +475,6 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanelSend;
     private javax.swing.JPanel jPanelSendToolBar;
     private javax.swing.JPanel jPanelSendingFiles;
-    private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
