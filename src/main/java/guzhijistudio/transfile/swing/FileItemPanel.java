@@ -65,9 +65,9 @@ public class FileItemPanel extends javax.swing.JPanel {
         jProgressBar1 = new javax.swing.JProgressBar();
 
         setBackground(java.awt.SystemColor.window);
-        setMaximumSize(new java.awt.Dimension(350, 64));
-        setMinimumSize(new java.awt.Dimension(350, 64));
-        setPreferredSize(new java.awt.Dimension(350, 64));
+        setMaximumSize(new java.awt.Dimension(300, 32767));
+        setMinimumSize(new java.awt.Dimension(300, 72));
+        setPreferredSize(new java.awt.Dimension(300, 72));
         addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 formMouseEntered(evt);
@@ -76,7 +76,7 @@ public class FileItemPanel extends javax.swing.JPanel {
                 formMouseExited(evt);
             }
         });
-        setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.PAGE_AXIS));
+        setLayout(new java.awt.GridLayout(3, 1));
 
         jLabelFileName.setFont(new java.awt.Font("宋体", 0, 24)); // NOI18N
         jLabelFileName.setText("jLabel1");
