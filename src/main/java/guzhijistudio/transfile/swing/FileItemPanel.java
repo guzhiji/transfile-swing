@@ -237,7 +237,7 @@ public class FileItemPanel extends javax.swing.JPanel {
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
 
         jLabelIcon.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabelIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/guzhijistudio/transfile/swing/format_unkown.png"))); // NOI18N
+        jLabelIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/guzhijistudio/transfile/swing/format_unknown.png"))); // NOI18N
         add(jLabelIcon);
 
         jPanel1.setMaximumSize(new java.awt.Dimension(260, 32767));
