@@ -3,6 +3,9 @@ package guzhijistudio.transfile.swing;
 import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.ImageIcon;
 
 public class FileItemPanel extends javax.swing.JPanel {
 
@@ -11,6 +14,42 @@ public class FileItemPanel extends javax.swing.JPanel {
     private boolean done = false;
     private String destIp = null;
     private final String transProgress, transUnitSec, transUnitMin, transUnitHr, transUnitUnknown;
+    private final static Map<String, String> fileExtensions = new HashMap<>();
+
+    static {
+        fileExtensions.put(".apk", "apk");
+        fileExtensions.put(".xls", "excel");
+        fileExtensions.put(".xlsx", "excel");
+        fileExtensions.put(".htm", "html");
+        fileExtensions.put(".html", "html");
+        fileExtensions.put(".mpg", "media");
+        fileExtensions.put(".mpeg", "media");
+        fileExtensions.put(".ogg", "media");
+        fileExtensions.put(".flv", "media");
+        fileExtensions.put(".mov", "media");
+        fileExtensions.put(".avi", "media");
+        fileExtensions.put(".mp4", "media");
+        fileExtensions.put(".mp3", "music");
+        fileExtensions.put(".wav", "music");
+        fileExtensions.put(".mid", "music");
+        fileExtensions.put(".flac", "music");
+        fileExtensions.put(".pdf", "pdf");
+        fileExtensions.put(".jpg", "picture");
+        fileExtensions.put(".jpeg", "picture");
+        fileExtensions.put(".bmp", "picture");
+        fileExtensions.put(".png", "picture");
+        fileExtensions.put(".gif", "picture");
+        fileExtensions.put(".ppt", "ppt");
+        fileExtensions.put(".pptx", "ppt");
+        fileExtensions.put(".txt", "text");
+        fileExtensions.put(".doc", "word");
+        fileExtensions.put(".docx", "word");
+        fileExtensions.put(".zip", "zip");
+        fileExtensions.put(".7z", "zip");
+        fileExtensions.put(".tar", "zip");
+        fileExtensions.put(".gz", "zip");
+        fileExtensions.put(".rar", "zip");
+    }
 
     /**
      * Creates new form FileItemPanel
@@ -47,10 +86,22 @@ public class FileItemPanel extends javax.swing.JPanel {
         jMenuItemRemove.addActionListener(actionListener);
     }
 
+    private ImageIcon getIcon(File file) {
+        String name = file.getName();
+        int pos = name.lastIndexOf(".");
+        String ext = pos > -1 ? name.substring(pos).toLowerCase() : "";
+        String type = fileExtensions.get(ext);
+        if (type == null) {
+            type = "unknown";
+        }
+        return new ImageIcon(getClass().getResource("/guzhijistudio/transfile/swing/format_" + type + ".png"));
+    }
+
     public final void setFile(File file) {
         this.file = file;
         jLabelFileName.setText(file.getName());
         jLabelFileSize.setText(formatSize(file.length()));
+        jLabelIcon.setIcon(getIcon(file));
     }
 
     public final File getFile() {
@@ -155,6 +206,8 @@ public class FileItemPanel extends javax.swing.JPanel {
         jPopupMenu1 = new javax.swing.JPopupMenu();
         jMenuItemResend = new javax.swing.JMenuItem();
         jMenuItemRemove = new javax.swing.JMenuItem();
+        jLabelIcon = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
         jLabelFileName = new javax.swing.JLabel();
         jLabelFileSize = new javax.swing.JLabel();
         jProgressBar1 = new javax.swing.JProgressBar();
@@ -167,9 +220,9 @@ public class FileItemPanel extends javax.swing.JPanel {
         jPopupMenu1.add(jMenuItemRemove);
 
         setBackground(java.awt.SystemColor.window);
-        setMaximumSize(new java.awt.Dimension(300, 72));
-        setMinimumSize(new java.awt.Dimension(300, 72));
-        setPreferredSize(new java.awt.Dimension(300, 72));
+        setMaximumSize(new java.awt.Dimension(310, 72));
+        setMinimumSize(new java.awt.Dimension(310, 72));
+        setPreferredSize(new java.awt.Dimension(310, 72));
         addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 formMouseClicked(evt);
@@ -181,15 +234,27 @@ public class FileItemPanel extends javax.swing.JPanel {
                 formMouseExited(evt);
             }
         });
-        setLayout(new java.awt.GridLayout(3, 1));
+        setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
+
+        jLabelIcon.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabelIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/guzhijistudio/transfile/swing/format_unkown.png"))); // NOI18N
+        add(jLabelIcon);
+
+        jPanel1.setMaximumSize(new java.awt.Dimension(260, 32767));
+        jPanel1.setMinimumSize(new java.awt.Dimension(260, 87));
+        jPanel1.setOpaque(false);
+        jPanel1.setPreferredSize(new java.awt.Dimension(260, 87));
+        jPanel1.setLayout(new java.awt.GridLayout(3, 1));
 
         jLabelFileName.setFont(new java.awt.Font("宋体", 0, 24)); // NOI18N
         jLabelFileName.setText(bundle.getString("FileItemPanel.jLabelFileName.text")); // NOI18N
-        add(jLabelFileName);
+        jPanel1.add(jLabelFileName);
 
         jLabelFileSize.setText(bundle.getString("FileItemPanel.jLabelFileSize.text")); // NOI18N
-        add(jLabelFileSize);
-        add(jProgressBar1);
+        jPanel1.add(jLabelFileSize);
+        jPanel1.add(jProgressBar1);
+
+        add(jPanel1);
     }// </editor-fold>//GEN-END:initComponents
 
     private void formMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseEntered
@@ -214,8 +279,10 @@ public class FileItemPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabelFileName;
     private javax.swing.JLabel jLabelFileSize;
+    private javax.swing.JLabel jLabelIcon;
     private javax.swing.JMenuItem jMenuItemRemove;
     private javax.swing.JMenuItem jMenuItemResend;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JProgressBar jProgressBar1;
     // End of variables declaration//GEN-END:variables
