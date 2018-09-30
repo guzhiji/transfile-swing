@@ -310,6 +310,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         jPanelSendToolBar.setLayout(new javax.swing.BoxLayout(jPanelSendToolBar, javax.swing.BoxLayout.LINE_AXIS));
 
+        jButtonAddFile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/guzhijistudio/transfile/swing/addfile.png"))); // NOI18N
         jButtonAddFile.setText(bundle.getString("MainFrame.jButtonAddFile.text")); // NOI18N
         jButtonAddFile.setFocusable(false);
         jButtonAddFile.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -321,6 +322,7 @@ public class MainFrame extends javax.swing.JFrame {
         });
         jPanelSendToolBar.add(jButtonAddFile);
 
+        jButtonSendAll.setIcon(new javax.swing.ImageIcon(getClass().getResource("/guzhijistudio/transfile/swing/sendall.png"))); // NOI18N
         jButtonSendAll.setText(bundle.getString("MainFrame.jButtonSendAll.text")); // NOI18N
         jButtonSendAll.setFocusable(false);
         jButtonSendAll.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -360,6 +362,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         jMenuSend.setText(bundle.getString("MainFrame.jMenuSend.text")); // NOI18N
 
+        jMenuItemAddFile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/guzhijistudio/transfile/swing/addfile.png"))); // NOI18N
         jMenuItemAddFile.setText(bundle.getString("MainFrame.jMenuItemAddFile.text")); // NOI18N
         jMenuItemAddFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -368,6 +371,7 @@ public class MainFrame extends javax.swing.JFrame {
         });
         jMenuSend.add(jMenuItemAddFile);
 
+        jMenuItemSendAll.setIcon(new javax.swing.ImageIcon(getClass().getResource("/guzhijistudio/transfile/swing/sendall.png"))); // NOI18N
         jMenuItemSendAll.setText(bundle.getString("MainFrame.jMenuItemSendAll.text")); // NOI18N
         jMenuItemSendAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -380,6 +384,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         jMenuConfig.setText(bundle.getString("MainFrame.jMenuConfig.text")); // NOI18N
 
+        jMenuItemConfig.setIcon(new javax.swing.ImageIcon(getClass().getResource("/guzhijistudio/transfile/swing/config.png"))); // NOI18N
         jMenuItemConfig.setText(bundle.getString("MainFrame.jMenuItemConfig.text")); // NOI18N
         jMenuItemConfig.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
