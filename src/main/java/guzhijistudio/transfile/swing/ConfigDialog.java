@@ -1,6 +1,9 @@
 package guzhijistudio.transfile.swing;
 
 import guzhijistudio.transfile.utils.Config;
+import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import javax.swing.JOptionPane;
 
 public class ConfigDialog extends javax.swing.JDialog {
@@ -32,6 +35,55 @@ public class ConfigDialog extends javax.swing.JDialog {
 
     public boolean isSaved() {
         return saved;
+    }
+
+    private boolean validateUserInput() {
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("guzhijistudio/transfile/swing/Bundle");
+
+        String deviceName = jTextFieldDeviceName.getText().trim();
+        if (deviceName.isEmpty()) {
+            JOptionPane.showMessageDialog(this, bundle.getString("ConfigDialog.Message.EmptyDeviceName"));
+            return false;
+        }
+
+        String sGroupAddr = jTextFieldGroupAddr.getText().trim();
+        if (sGroupAddr.isEmpty()) {
+            JOptionPane.showMessageDialog(this, bundle.getString("ConfigDialog.Message.EmptyGroupAddr"));
+            return false;
+        }
+        try {
+            InetAddress groupAddr = InetAddress.getByName(sGroupAddr);
+            if (groupAddr == null) {
+                JOptionPane.showMessageDialog(this, bundle.getString("ConfigDialog.Message.InvalidGroupAddr"));
+                return false;
+            } else if (!groupAddr.isMulticastAddress()) {
+                JOptionPane.showMessageDialog(this, bundle.getString("ConfigDialog.Message.NotMulticastAddr"));
+                return false;
+            }
+        } catch (UnknownHostException ex) {
+            JOptionPane.showMessageDialog(this, bundle.getString("ConfigDialog.Message.InvalidGroupAddr"));
+            return false;
+        }
+
+        String sDir = jTextFieldDir.getText().trim();
+        if (sDir.isEmpty()) {
+            JOptionPane.showMessageDialog(this, bundle.getString("ConfigDialog.Message.EmptyDir"));
+            return false;
+        }
+        File dir = new File(sDir);
+        if (!dir.exists()) {
+            JOptionPane.showMessageDialog(this, bundle.getString("ConfigDialog.Message.DirNotExist"));
+            return false;
+        } else if (!dir.isDirectory()) {
+            JOptionPane.showMessageDialog(this, bundle.getString("ConfigDialog.Message.PathNotDir"));
+            return false;
+        } else if (!dir.canWrite()) {
+            JOptionPane.showMessageDialog(this, bundle.getString("ConfigDialog.Message.DirNotWritable"));
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -142,15 +194,17 @@ public class ConfigDialog extends javax.swing.JDialog {
 
     private void jButtonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSaveActionPerformed
 
-        Config.DEVICE_NAME = jTextFieldDeviceName.getText();
-        Config.GROUP_ADDR = jTextFieldGroupAddr.getText();
-        Config.DIR = jTextFieldDir.getText();
-        if (Config.save()) {
-            saved = true;
-            dispose();
-        } else {
-            JOptionPane.showMessageDialog(this, transConfigSaveFailure);
-            System.exit(1);
+        if (validateUserInput()) {
+            Config.DEVICE_NAME = jTextFieldDeviceName.getText().trim();
+            Config.GROUP_ADDR = jTextFieldGroupAddr.getText().trim();
+            Config.DIR = jTextFieldDir.getText().trim();
+            if (Config.save()) {
+                saved = true;
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, transConfigSaveFailure);
+                System.exit(1);
+            }
         }
 
     }//GEN-LAST:event_jButtonSaveActionPerformed
