@@ -66,16 +66,20 @@ public class MainFrame extends javax.swing.JFrame {
         }
 
         @Override
-        public void onProgress(File file, long received, long total) {
+        public void onProgress(File file, long received, long total, long speed, long secs) {
             FileItemPanel fileItem = findFileItemPanel(jPanelFilesReceived, file);
             if (fileItem != null) {
-                fileItem.setProgress(received, total);
+                fileItem.setProgress(received, total, speed, secs);
             }
         }
     };
     private final FileSender.FileSenderListener fsListener = new FileSender.FileSenderListener() {
         @Override
         public void onStart(File file) {
+            FileItemPanel fileItem = findFileItemPanel(jPanelSendingFiles, file);
+            if (fileItem != null) {
+                fileItem.setError(null);
+            }
         }
 
         @Override
@@ -90,15 +94,15 @@ public class MainFrame extends javax.swing.JFrame {
         public void onError(File file, String msg) {
             FileItemPanel fileItem = findFileItemPanel(jPanelSendingFiles, file);
             if (fileItem != null) {
-                fileItem.setProgressing(false);
+                fileItem.setError(msg);
             }
         }
 
         @Override
-        public void onProgress(File file, long sent, long total) {
+        public void onProgress(File file, long sent, long total, long speed, long secs) {
             FileItemPanel fileItem = findFileItemPanel(jPanelSendingFiles, file);
             if (fileItem != null) {
-                fileItem.setProgress(sent, total);
+                fileItem.setProgress(sent, total, speed, secs);
             }
         }
     };

@@ -5,12 +5,16 @@ import java.io.*;
 public final class SocketUtils {
 
     public interface Progress {
+
         void onStart(File file);
+
         void onFinish(File file);
-        void onProgress(File file, long progress, long total);
+
+        void onProgress(File file, long progress, long total, long speed, long secs);
     }
 
     public static class BufPos {
+
         private int pos;
 
         public BufPos() {
@@ -44,8 +48,9 @@ public final class SocketUtils {
     }
 
     public static void print(byte[] values) {
-        for (int i = values.length - 1; i >= 0; i--)
+        for (int i = values.length - 1; i >= 0; i--) {
             print(values[i]);
+        }
     }
 
     public static void println(byte[] values) {
@@ -96,7 +101,9 @@ public final class SocketUtils {
         if (start + 4 <= buf.length) {
             byte[] data = fromInt32(value);
             System.arraycopy(data, 0, buf, start, 4);
-            if (pos != null) pos.setPos(start + 4);
+            if (pos != null) {
+                pos.setPos(start + 4);
+            }
         } else if (pos != null) {
             pos.setPos(start);
         }
@@ -114,7 +121,9 @@ public final class SocketUtils {
         if (start + 8 <= buf.length) {
             byte[] data = fromInt64(value);
             System.arraycopy(data, 0, buf, start, 8);
-            if (pos != null) pos.setPos(start + 8);
+            if (pos != null) {
+                pos.setPos(start + 8);
+            }
         } else if (pos != null) {
             pos.setPos(start);
         }
@@ -137,14 +146,20 @@ public final class SocketUtils {
     public static void writeString(byte[] buf, String value, BufPos pos) throws UnsupportedEncodingException {
         byte[] data = value == null ? new byte[0] : value.getBytes("utf-8");
         int start = 0;
-        if (pos != null) start = pos.getPos();
+        if (pos != null) {
+            start = pos.getPos();
+        }
         int len = buf.length - start - 4;
         if (len > 0) {
-            if (len > data.length) len = data.length;
+            if (len > data.length) {
+                len = data.length;
+            }
             writeInt32(buf, start, len);
             start += 4;
             System.arraycopy(data, 0, buf, start, len);
-            if (pos != null) pos.setPos(start + len);
+            if (pos != null) {
+                pos.setPos(start + len);
+            }
         } else if (pos != null) {
             pos.setPos(start);
         }
@@ -218,16 +233,26 @@ public final class SocketUtils {
 
     public static String toStr(byte[] bytes, byte[] buf, BufPos pos) throws UnsupportedEncodingException {
         int start = 0;
-        if (pos != null) start = pos.getPos();
+        if (pos != null) {
+            start = pos.getPos();
+        }
         // cannot read len
-        if (bytes.length < start + 4) return null;
+        if (bytes.length < start + 4) {
+            return null;
+        }
         int len = toInt32(bytes, start);
         // untrue len
-        if (len + 4 + start > bytes.length) return null;
+        if (len + 4 + start > bytes.length) {
+            return null;
+        }
         // truncate the string if buf space isn't big enough
-        if (len > buf.length) len = buf.length;
+        if (len > buf.length) {
+            len = buf.length;
+        }
         System.arraycopy(bytes, start + 4, buf, 0, len);
-        if (pos != null) pos.setPos(start + 4 + len);
+        if (pos != null) {
+            pos.setPos(start + 4 + len);
+        }
         return new String(buf, 0, len, "utf-8");
     }
 
@@ -258,8 +283,8 @@ public final class SocketUtils {
     }
 
     public static void readData(InputStream src, byte[] buf, OutputStream dest, Progress pg, File relevantFile) throws IOException {
-        long len = readInt64(src), t = System.currentTimeMillis();
-        long received = 0, d;
+        long t = System.currentTimeMillis(), td; // time
+        long len = readInt64(src), received = 0, rd = 0, d; // bytes
         int r;
         do {
             d = len - received;
@@ -267,13 +292,20 @@ public final class SocketUtils {
             if (r > 0) {
                 dest.write(buf, 0, r);
                 received += r;
-                if (pg != null && System.currentTimeMillis() - t > 500) {
-                    pg.onProgress(relevantFile, received, len);
+                rd += r;
+                td = System.currentTimeMillis() - t;
+                if (pg != null && td > 500) {
+                    long speed = (long) (rd / (td / 1000.0)); // bytes/sec
+                    long remaining = speed > 0 ? ((len - received) / speed) : -1; // sec
+                    pg.onProgress(relevantFile, received, len, speed, remaining);
                     t = System.currentTimeMillis();
+                    rd = 0;
                 }
             }
         } while (r >= 0 && received < len);
-        if (pg != null) pg.onProgress(relevantFile, received, len);
+        if (pg != null) {
+            pg.onProgress(relevantFile, received, len, 0, 0);
+        }
     }
 
     public static String readFile(InputStream src, byte[] buf, File dir) throws IOException {
@@ -287,13 +319,17 @@ public final class SocketUtils {
         }
         File file = new File(dir, filename);
         if (file.exists() || file.createNewFile()) {
-            if (pg != null) pg.onStart(file);
+            if (pg != null) {
+                pg.onStart(file);
+            }
             FileOutputStream dest = new FileOutputStream(file);
             try {
                 readData(src, buf, dest, pg, file);
             } finally {
                 dest.close();
-                if (pg != null) pg.onFinish(file);
+                if (pg != null) {
+                    pg.onFinish(file);
+                }
             }
             return filename;
         } else {
@@ -308,10 +344,13 @@ public final class SocketUtils {
     public static void writeFile(OutputStream dest, byte[] buf, String filename, Progress pg) throws IOException {
         File file = new File(filename);
         if (file.exists()) {
-            if (pg != null) pg.onStart(file);
+            if (pg != null) {
+                pg.onStart(file);
+            }
             writeString(dest, file.getName());
             writeInt64(dest, file.length());
-            long t = System.currentTimeMillis(), sent = 0;
+            long t = System.currentTimeMillis(), td;
+            long sent = 0, sd = 0;
             int r;
             FileInputStream fis = new FileInputStream(file);
             try {
@@ -320,14 +359,19 @@ public final class SocketUtils {
                     if (r > 0) {
                         dest.write(buf, 0, r);
                         sent += r;
-                        if (pg != null && System.currentTimeMillis() - t > 500) {
-                            pg.onProgress(file, sent, file.length());
+                        sd += r;
+                        td = System.currentTimeMillis() - t;
+                        if (pg != null && td > 500) {
+                            long speed = (long) (sd / (td / 1000.0)); // bytes/sec
+                            long remaining = speed > 0 ? ((file.length() - sent) / speed) : -1; // sec
+                            pg.onProgress(file, sent, file.length(), speed, remaining);
                             t = System.currentTimeMillis();
+                            sd = 0;
                         }
                     }
                 } while (r >= 0);
                 if (pg != null) {
-                    pg.onProgress(file, sent, file.length());
+                    pg.onProgress(file, sent, file.length(), 0, 0);
                     pg.onFinish(file);
                 }
             } finally {

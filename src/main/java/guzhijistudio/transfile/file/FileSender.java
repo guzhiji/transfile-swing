@@ -10,10 +10,14 @@ import java.net.Socket;
 public class FileSender extends Thread {
 
     public interface FileSenderListener {
+
         void onStart(File file);
+
         void onFileSent(File file);
+
         void onError(File file, String msg);
-        void onProgress(File file, long sent, long total);
+
+        void onProgress(File file, long sent, long total, long speed, long secs);
     }
 
     private final String ip;
@@ -55,8 +59,8 @@ public class FileSender extends Thread {
                         }
 
                         @Override
-                        public void onProgress(File file, long progress, long total) {
-                            listener.onProgress(file, progress, total);
+                        public void onProgress(File file, long progress, long total, long speed, long secs) {
+                            listener.onProgress(file, progress, total, speed, secs);
                         }
                     });
                     SocketUtils.writeString(os, "close");

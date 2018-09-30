@@ -11,11 +11,16 @@ import java.net.Socket;
 public class FileReceiver extends Thread {
 
     public interface FileReceiverListener {
+
         void onFileReceived(File file);
+
         void onFile(File file);
+
         void onMsg(String msg);
+
         void onError(String msg);
-        void onProgress(File file, long received, long total);
+
+        void onProgress(File file, long received, long total, long speed, long secs);
     }
 
     private final ServerSocket socket;
@@ -40,7 +45,6 @@ public class FileReceiver extends Thread {
         try {
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -72,15 +76,18 @@ public class FileReceiver extends Thread {
                                             }
 
                                             @Override
-                                            public void onProgress(File file, long progress, long total) {
-                                                listener.onProgress(file, progress, total);
+                                            public void onProgress(File file, long progress, long total, long speed, long secs) {
+                                                listener.onProgress(file, progress, total, speed, secs);
                                             }
                                         });
-                                        if (f == null)
+                                        if (f == null) {
                                             listener.onError("文件接收失败");
+                                        }
                                     } else if ("msg".equalsIgnoreCase(cmd)) {
                                         String m = SocketUtils.readString(is, buf);
-                                        if (!m.isEmpty()) listener.onMsg(m);
+                                        if (!m.isEmpty()) {
+                                            listener.onMsg(m);
+                                        }
                                     } else if ("close".equalsIgnoreCase(cmd)) {
                                         is.close();
                                         s.close();

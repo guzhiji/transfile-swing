@@ -1,5 +1,6 @@
 package guzhijistudio.transfile.swing;
 
+import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.io.File;
 
@@ -9,12 +10,21 @@ public class FileItemPanel extends javax.swing.JPanel {
     private boolean progressing = false;
     private boolean done = false;
     private String destIp = null;
+    private final String transProgress, transUnitSec, transUnitMin, transUnitHr, transUnitUnknown;
 
     /**
      * Creates new form FileItemPanel
      */
     public FileItemPanel() {
         initComponents();
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("guzhijistudio/transfile/swing/Bundle");
+        transProgress = bundle.getString("FileItemPanel.progress");
+        transUnitSec = bundle.getString("FileItemPanel.unit.sec");
+        transUnitMin = bundle.getString("FileItemPanel.unit.min");
+        transUnitHr = bundle.getString("FileItemPanel.unit.hr");
+        transUnitUnknown = bundle.getString("FileItemPanel.unit.unknown");
+
         jPopupMenu1.setVisible(false);
         jMenuItemResend.setVisible(false);
         jMenuItemRemove.setVisible(false);
@@ -47,10 +57,15 @@ public class FileItemPanel extends javax.swing.JPanel {
         return file;
     }
 
-    public final void setProgress(long progress, long total) {
+    public final void setProgress(long progress, long total, long speed, long secs) {
         jProgressBar1.setMaximum(10000);
         jProgressBar1.setValue((int) (10000.0 * progress / total));
-        jLabelFileSize.setText(formatSize(progress) + " / " + formatSize(total));
+        jLabelFileSize.setText(String.format(
+                transProgress,
+                formatSize(progress),
+                formatSize(total),
+                formatSize(speed),
+                formatTime(secs)));
         progressing = true;
     }
 
@@ -63,6 +78,16 @@ public class FileItemPanel extends javax.swing.JPanel {
 
     public final boolean isProgressing() {
         return progressing;
+    }
+
+    public final void setError(String msg) {
+        if (msg == null) {
+            setToolTipText(null);
+        } else {
+            setToolTipText(msg);
+            setBackground(Color.PINK);
+            progressing = false;
+        }
     }
 
     public final void setDone(boolean done) {
@@ -100,6 +125,22 @@ public class FileItemPanel extends javax.swing.JPanel {
         }
         s /= 1024;
         return Math.round(s * 100) / 100.0 + " Gb";
+    }
+
+    private String formatTime(long secs) {
+        float t = secs;
+        if (t < 0) {
+            return transUnitUnknown;
+        }
+        if (t <= 60) {
+            return (int) t + transUnitSec;
+        }
+        t /= 60;
+        if (t <= 60) {
+            return Math.round(t * 100) / 100.0 + transUnitMin;
+        }
+        t /= 60;
+        return Math.round(t * 100) / 100.0 + transUnitHr;
     }
 
     /**
